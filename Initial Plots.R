@@ -25,6 +25,11 @@ par(mfrow=c(1,2))
 hist(dat$elevation[dat$landsat == 0], ylim = c(0,400000))
 hist(dat$elevation[dat$landsat == 100],ylim = c(0,400000))
 
+#Slope Effects
+par(mfrow=c(1,2))
+hist(dat$slope[dat$landsat == 0], ylim = c(0,800000))
+hist(dat$slope[dat$landsat == 100],ylim = c(0,800000))
+
 #Aspect
 par(mfrow=c(1,2))
 hist(dat$aspect[dat$landsat == 0], ylim = c(0,200000))

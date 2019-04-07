@@ -1,0 +1,12 @@
+-Last time, we made some plots and from the higher volume (relatively) of 0 and 100% coverage in the landsat outcome, we decided we would predict that.
+
+
+
+4/7-
+Not sure about the slope as a predictor
+
+Decided that Aspect will not be a good predictor (will require more evidence)
+
+Not sure about collinearity effect of slope and elevation
+
+Not collinearity, but similar interaction between day of year and mods
