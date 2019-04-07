@@ -4,6 +4,7 @@ load("C:/Users/kevin/Documents/Uni/2019 S1 (Boulder)/APPM 4580/Final Project/Sno
 
 summary(dat)
 str(dat)
+set.seed(1)
 sv<- runif(1000,min = 1, max = 4080535)
 
 pairs(landsat~., data = dat[sv,])
@@ -16,24 +17,32 @@ hist(dat$landsat)
 hist(dat$landsat[dat$landsat != 0 & dat$landsat != 100 ])
 
 #Seasonality Effects
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 hist(dat$day.of.year[dat$landsat == 0],ylim = c(0,600000) )
 hist(dat$day.of.year[dat$landsat == 100],ylim =  c(0,600000) )
+hist(dat$day.of.year[dat$landsat != 100 & dat$landsat!= 0],ylim =  c(0,600000) )
+
 
 #Elevation Effects
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 hist(dat$elevation[dat$landsat == 0], ylim = c(0,400000))
 hist(dat$elevation[dat$landsat == 100],ylim = c(0,400000))
+hist(dat$elevation[dat$landsat != 100 & dat$landsat!= 0],ylim =  c(0,600000) )
+
 
 #Slope Effects
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 hist(dat$slope[dat$landsat == 0], ylim = c(0,800000))
 hist(dat$slope[dat$landsat == 100],ylim = c(0,800000))
+hist(dat$slope[dat$landsat != 100 & dat$landsat!= 0],ylim =  c(0,600000) )
+
 
 #Aspect
-par(mfrow=c(1,2))
+par(mfrow=c(1,3))
 hist(dat$aspect[dat$landsat == 0], ylim = c(0,200000))
 hist(dat$aspect[dat$landsat == 100],ylim = c(0,200000)) 
+hist(dat$aspect[dat$landsat != 100 & dat$landsat!= 0],ylim =  c(0,600000) )
+
 #These graphs almost follow a sine graph pattern
 hist(dat$aspect)
 
