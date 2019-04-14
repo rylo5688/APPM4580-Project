@@ -75,6 +75,10 @@ for(i in 1:(n*2) ){
   hist(dat$landsat[ dat$landsat != 0 & dat$landsat != 100 & dat$land.type == i], main = paste("Land Type", as.character(i) ) )
 }
 
+for(i in 1:(n*2) ){
+  hist(dat$landsat[ dat$landsat != 0 & dat$landsat != 100 & dat$land.type == (i+8)], main = paste("Land Type", as.character(i+8) ) )
+}
+
 
 
 
