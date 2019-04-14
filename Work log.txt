@@ -10,3 +10,10 @@ Decided that Aspect will not be a good predictor (will require more evidence)
 Not sure about collinearity effect of slope and elevation
 
 Not collinearity, but similar interaction between day of year and mods
+
+
+talked about the independance assumption with the new thingos and justified its assumption
+
+Understand and have idea for a nested logistic regression model. Order based on logic and graphs
+
+Exponential accumulation of errors.

@@ -16,6 +16,7 @@ par(mfrow=c(1,2))
 hist(dat$landsat)
 hist(dat$landsat[dat$landsat != 0 & dat$landsat != 100 ])
 
+
 #Seasonality Effects
 par(mfrow=c(1,3))
 hist(dat$day.of.year[dat$landsat == 0],ylim = c(0,600000) )
