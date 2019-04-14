@@ -43,14 +43,32 @@ subset$landsat[train]
 library(MASS)
 
 ## NOTE: Had to take out land.type
-lda.fit <- lda(landsat~day.of.year+elevation+slope+modis, data=subset, subset=train, prior = c(1,1,1)/3)
+lda.fit <- lda(landsat~slope, data=subset, subset=train)
 lda.fit
 
 # Plotting the fit
 par(mfrow=c(1,1))
 plot(lda.fit, dimen=1)
-plot(lda.fit, dimen=2)
 
+library(ggplot2)
+ggplotLDAPrep <- function(x){
+  if (!is.null(Terms <- x$terms)) {
+    data <- model.frame(x)
+    X <- model.matrix(delete.response(Terms), data)
+    g <- model.response(data)
+    xint <- match("(Intercept)", colnames(X), nomatch = 0L)
+    if (xint > 0L) 
+      X <- X[, -xint, drop = FALSE]
+  }
+  means <- colMeans(x$means)
+  X <- scale(X, center = means, scale = FALSE) %*% x$scaling
+  rtrn <- as.data.frame(cbind(X,labels=as.character(g)))
+  rtrn <- data.frame(X,labels=as.character(g))
+  return(rtrn)
+}
+
+fitGraph <- ggplotLDAPrep(lda.fit)
+ggplot(fitGraph, aes(LD1,LD2, color=labels))+geom_point()
 
 # Total counts of each classification
 sum(lda.pred$class == 0)
@@ -73,6 +91,3 @@ summary(r.lda)
 r.lda['rocs'][[1]]
 plot.roc(r.lda['rocs'][[1]][[1]])
 sapply(2:length(r.lda['rocs'][[1]]),function(i) lines.roc(r.lda['rocs'][[1]][[i]],col=i))
-
-# Plotting
-# idk lol
