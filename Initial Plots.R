@@ -26,24 +26,32 @@ mode100 <- as.integer(names(which.max(table(dat$day.of.year[dat$landsat == 100])
 # Centering around each mode
 x <- rep(0, 4080535)
 x[dat$landsat == 0] <- dat$day.of.year[dat$landsat == 0] - mode0
-x[dat$landsat == 100] <- dat$day.of.year[dat$landsat == 100] - mode100
-x[dat$landsat != 100 & dat$landsat!= 0] <- dat$day.of.year[dat$landsat != 100 & dat$landsat!= 0] - mode50
+x[dat$landsat == 100] <- dat$day.of.year[dat$landsat == 100] - mode0
+x[dat$landsat != 100 & dat$landsat!= 0] <- dat$day.of.year[dat$landsat != 100 & dat$landsat!= 0] - mode0
 
 table(x)
 x[x < -182] <- x[x < -182] + 365
 x[x > 182] <- x[x > 182] - 365
 table(x[dat$landsat == 0])
 
-
+# Original day of year histograms
 par(mfrow=c(1,3))
 hist(dat$day.of.year[dat$landsat == 0],ylim = c(0,600000) )
-which.max(table(dat$day.of.year[dat$landsat == 0]))
+hist(dat$day.of.year[dat$landsat == 100],ylim = c(0,600000) )
+hist(dat$day.of.year[dat$landsat != 0 & dat$landsat != 100],ylim = c(0,600000) )
 
+# Centering around the mode histogram
 hist(x[dat$landsat == 0] , ylim = c(0,600000) )
-
 hist(x[dat$landsat == 100],ylim =  c(0,600000) )
 hist(x[dat$landsat != 100 & dat$landsat!= 0] ,ylim =  c(0,600000) )
 
+# Histogram with cosine transformation
+cos(2*pi*dat$day.of.year[dat$landsat == 0]/365)
+table(dat$day.of.year)
+par(mfrow=c(1,3))
+hist(cos(dat$day.of.year[dat$landsat == 0]/365), ylim = c(0,600000) )
+hist(cos(dat$day.of.year[dat$landsat == 100]/365), ylim =  c(0,600000) )
+hist(cos(dat$day.of.year[dat$landsat != 0 & dat$landsat != 100]/365) ,ylim =  c(0,600000) )
 
 #Elevation Effects
 par(mfrow=c(1,3))
@@ -57,6 +65,12 @@ par(mfrow=c(1,3))
 hist(dat$slope[dat$landsat == 0], ylim = c(0,800000))
 hist(dat$slope[dat$landsat == 100],ylim = c(0,800000))
 hist(dat$slope[dat$landsat != 100 & dat$landsat!= 0],ylim =  c(0,600000) )
+
+#Slope Effects log transformation
+par(mfrow=c(1,3))
+hist(log(dat$slope[dat$landsat == 0]+1), ylim = c(0,800000))
+hist(log(dat$slope[dat$landsat == 100]+1),ylim = c(0,800000))
+hist(log(dat$slope[dat$landsat != 100 & dat$landsat!= 0]+1),ylim =  c(0,600000) )
 
 
 #Aspect
@@ -97,6 +111,10 @@ for(i in 1:(n*2) ){
 }
 
 
-
+# Modis histograms
+par(mfrow=c(1,3))
+hist((dat$modis[dat$landsat == 0]),ylim = c(0,600000) )
+hist((dat$modis[dat$landsat == 100]),ylim = c(0,600000) )
+hist((dat$modis[dat$landsat != 0 & dat$landsat != 100])^3,ylim = c(0,600000) )
 
 

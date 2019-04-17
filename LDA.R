@@ -15,8 +15,10 @@ sv
 sub.i <- logical(4080535) 
 sub.i[sv] <- TRUE  
 
-subset <- data.frame(dat$landsat[sub.i], dat$day.of.year[sub.i], dat$elevation[sub.i], dat$slope[sub.i], dat$land.type[sub.i], dat$modis[sub.i])
-colnames(subset) <- c("landsat", "day.of.year", "elevation", "slope", "land.type", "modis")
+#subset <- data.frame(dat$landsat[sub.i], dat$day.of.year[sub.i], dat$elevation[sub.i], dat$slope[sub.i], dat$land.type[sub.i], dat$modis[sub.i])
+#colnames(subset) <- c("landsat", "day.of.year", "elevation", "slope", "land.type", "modis")
+subset <- data.frame(dat$landsat[sub.i], dat$day.of.year[sub.i], dat$elevation[sub.i], dat$slope[sub.i], dat$modis[sub.i])
+colnames(subset) <- c("landsat", "day.of.year", "elevation", "slope", "modis")
 #y.test <- dat$landsat[!sub]
 
 middle_indices <- which(subset$landsat != 0 & subset$landsat != 100)
@@ -28,22 +30,47 @@ train <- sample(1:n, n/2)
 
 subset$landsat[train]
 
-# Using forward stepwise selection on the model without transformations
-#wo_trans.fwd.sub <- regsubsets(landsat~.,data=subset,nvmax=5,method="forward")
-#summary(wo_trans.fwd.sub)
-#wo_trans.sb <- summary(wo_trans.fwd.sub)
-#par(mfrow=c(2,3))
-#plot(wo_trans.sb$rss)
-#plot(wo_trans.sb$rsq)
-#plot(wo_trans.sb$adjr2)
-#plot(wo_trans.sb$cp) # will select same model as AIC for regression
-#plot(wo_trans.sb$bic)
+# Variable Selection
+landsat.sub <- regsubsets(landsat~cos(2*pi*day.of.year/365)+elevation+log(slope+1)+modis, data=subset, nvmax=4)
+landsat.sb <- summary(landsat.sub)
+landsat.sb
 
-# LDA 
+par(mfrow=c(2,3))
+plot(landsat.sb$rss, xlab="Number of variables", ylab="RSS")
+plot(landsat.sb$rsq, xlab="Number of variables", ylab="RSq")
+plot(landsat.sb$adjr2, xlab="Number of variables", ylab="AdjR2")
+points(which.max(landsat.sb$rsq), landsat.sb$adjr2[which.max(landsat.sb$rsq)], col="red", cex=2, pch=20)
+
+plot(landsat.sb$cp, xlab="Number of variables", ylab="CP") # will select same model as AIC for regression
+points(which.min(landsat.sb$cp), landsat.sb$cp[which.min(landsat.sb$cp)], col="red", cex=2, pch=20)
+
+plot(landsat.sb$bic, xlab="Number of variables", ylab="BIC")
+points(which.min(landsat.sb$bic), landsat.sb$bic[which.min(landsat.sb$bic)], col="red", cex=2, pch=20)
+
+# BIC
+num_vars <- which.min(landsat.sb$bic) # 1 variables minimizez bic
+num_vars
+coef <- coef(landsat.sub, num_vars)
+covars <- names(coef[2:length(coef)])
+covars
+
+# CP 
+num_vars <- which.min(landsat.sb$cp) # 2 variables minimizez cp
+num_vars
+coef <- coef(landsat.sub, num_vars)
+covars <- names(coef[2:length(coef)])
+covars
+
+
+
+##### LDA 
 library(MASS)
 
 ## NOTE: Had to take out land.type
-lda.fit <- lda(landsat~slope, data=subset, subset=train)
+#subset$slope[subset$slope == 0] <- 0.0000001 # Make slope a very small number so logging doesn't make it -Inf
+#table(log(subset$slope) == -Inf)
+#lda.fit <- lda(landsat~modis, data=subset, subset=train)
+lda.fit <- lda(landsat~cos(2*pi*day.of.year/365)+elevation+modis, data=subset, subset=train)
 lda.fit
 
 # Plotting the fit
@@ -70,13 +97,14 @@ ggplotLDAPrep <- function(x){
 fitGraph <- ggplotLDAPrep(lda.fit)
 ggplot(fitGraph, aes(LD1,LD2, color=labels))+geom_point()
 
+
+# Prediction
+lda.pred <- predict(object=lda.fit, newdata=subset[-train,])
+
 # Total counts of each classification
 sum(lda.pred$class == 0)
 sum(lda.pred$class == 50) 
 sum(lda.pred$class == 100) 
-
-# Prediction
-lda.pred <- predict(object=lda.fit, newdata=subset[-train,])
 
 head(lda.pred$class, 3)
 head(lda.pred$posterior, 3)
@@ -86,8 +114,10 @@ library(pROC)
 r.lda <- multiclass.roc(lda.pred$class~lda.pred$posterior[,2])
 summary(r.lda)
 
+
 # Plotting each roc curve (pairs each off 0 to 50, 0 to 100, 50 to 100)
 # Order: Black, red, green
 r.lda['rocs'][[1]]
 plot.roc(r.lda['rocs'][[1]][[1]])
 sapply(2:length(r.lda['rocs'][[1]]),function(i) lines.roc(r.lda['rocs'][[1]][[i]],col=i))
+
