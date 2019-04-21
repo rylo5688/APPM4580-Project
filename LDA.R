@@ -139,7 +139,7 @@ subset$cat[subset$landsat != 100 & subset$landsat!= 0] <- 50
 #dat$cat[dat$landsat != 100 & dat$landsat!= 0] <- 50
 
 
-percerror <- rep(0,15)
+percerror <- rep(NA,15)
 for (i in 1:15 ){
   train.dat <- subset[rand != i,]
   test.dat <- subset[rand == i,]
