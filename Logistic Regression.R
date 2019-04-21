@@ -80,14 +80,19 @@ for (i in 1:15 ){
   train.dat <- dat[rand != i,]
   test.dat <- dat[rand == i,]
   predict <- rep(0, nrow(test.dat))
-  
-  trainmodel <- glm( I(cat == 0) ~ modis + land.type + day + elevation + slope, data = train.dat , family = binomial) 
+  #trainmodel <- glm( I(cat == 0) ~ modis + land.type + day + elevation + slope, data = train.dat , family = binomial) 
+  trainmodel <- glm( I(cat == 0) ~ modis + land.type + day + elevation + sin.slope, data = train.dat , family = binomial) 
   predict <- (predict(object = trainmodel, dat = test.dat,  type = "response" ) > 0.5)
   percerror[i] <- mean( predict != (test.dat$landsat == 0) )
   print(percerror)
   
 }
 mean(percerror)
+
+
+### RESULTS:
+# slope: 0.5895779
+# sin.slope: 0.589606
 
 
 ###Step 2 100 Snow vs <100 Snow
@@ -157,4 +162,10 @@ for (i in 1:15 ){
   
 }
 mean(percerror)
+
+
+
+
+
+
 
