@@ -27,7 +27,7 @@ fit <- glm( I(cat == 0 )~ cos(2*pi*(day.of.year - 50)/365) + elevation + slope +
 summary(fit)
 
 
-#1st step, no snow vs some snow
+##############1st step, no snow vs some snow
 
 fullmod <- glm( I(cat == 0 ) ~., data = dat[,-c(1,2,10)] , family = binomial, subset = sv)
 bwd <- step(fullmod)
@@ -81,12 +81,80 @@ for (i in 1:15 ){
   test.dat <- dat[rand == i,]
   predict <- rep(0, nrow(test.dat))
   
-  trainmodel <- glm( formula(fwd), data = train.dat[,-c(1,2,10)] , family = binomial) 
-  predict <- (predict(object = trainmodel, dat = test.dat,  response = "predict" ) < 0.5)
+  trainmodel <- glm( I(cat == 0) ~ modis + land.type + day + elevation + slope, data = train.dat , family = binomial) 
+  predict <- (predict(object = trainmodel, dat = test.dat,  type = "response" ) > 0.5)
   percerror[i] <- mean( predict != (test.dat$landsat == 0) )
   print(percerror)
   
 }
 mean(percerror)
 
-c(TRUE, TRUE, FALSE , FALSE) == c(1,0,1,0)
+
+###Step 2 100 Snow vs <100 Snow
+
+cat.z <- which(dat[,"cat"] != 0,)
+
+
+fullmod <- glm( I(cat == 100 ) ~., data = dat[cat.z,-c(1,2,10)] , family = binomial, subset = sv) 
+bwd3 <- step(fullmod)
+summary(bwd3)
+
+
+nullmod <-  glm( I(cat == 100 ) ~ 1, data = dat[cat.z,-c(1,2,10)] , family = binomial, subset = sv)
+fwd3 <-  step(nullmod, scope=list(lower=formula(nullmod),upper=formula(fullmod)),
+             direction="forward")
+
+summary(fwd3)
+
+formula(fwd3)
+formula(bwd3)
+
+summary(bwd3)$aic
+summary(fwd3)$aic
+
+
+
+fullmod <- glm( I(cat == 100 ) ~., data = dat[cat.z,-c(1,2,4)] , family = binomial, subset = sv) 
+bwd4 <- step(fullmod)
+#summary(bwd4)
+
+
+nullmod <-  glm( I(cat == 100 ) ~ 1, data = dat[cat.z,-c(1,2,4)] , family = binomial, subset = sv)
+fwd4 <-  step(nullmod, scope=list(lower=formula(nullmod),upper=formula(fullmod)),
+              direction="forward")
+
+summary(fwd4)
+
+formula(fwd4)
+formula(bwd4)
+
+summary(bwd4)$aic
+summary(fwd4)$aic
+
+#######Cross-Validation Time#################
+
+
+set.seed(12)
+rand <- sample.int(15,4080535, replace = TRUE)
+
+dat$cross.val <- rand
+
+# dat$cat <- dat$landsat
+# dat$cat[dat$landsat != 100 & dat$landsat!= 0] <- 50
+
+dat2 <- dat[cat.z,]
+
+percerror <- rep(NA,15)
+for (i in 1:15 ){
+  train.dat <- dat2[rand != i,]
+  test.dat <- dat2[rand == i,]
+  predict <- rep(0, nrow(test.dat))
+  
+  trainmodel <- glm( I(cat == 100) ~ land.type + modis + day , data = train.dat , family = binomial) 
+  predict <- (predict(object = trainmodel, dat = test.dat,  type = "response" ) > 0.5)
+  percerror[i] <- mean( predict != (test.dat$landsat == 0) )
+  print(percerror)
+  
+}
+mean(percerror)
+
