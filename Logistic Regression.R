@@ -79,10 +79,12 @@ percerror <- rep(NA,15)
 for (i in 1:15 ){
   train.dat <- dat[rand != i,]
   test.dat <- dat[rand == i,]
+  predict <- rep(0, nrow(test.dat))
   
   trainmodel <- glm( formula(fwd), data = train.dat[,-c(1,2,10)] , family = binomial) 
-  predict <-predict( dat = test.dat, model = trainmodel )
+  predict <- (predict(object = trainmodel, dat = test.dat,  response = "predict" ) < 0.5)
   percerror[i] <- mean( predict != (test.dat$landsat == 0) )
+  print(percerror)
   
 }
 mean(percerror)
