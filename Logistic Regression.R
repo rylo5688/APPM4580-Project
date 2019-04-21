@@ -164,8 +164,12 @@ for (i in 1:15 ){
 mean(percerror)
 
 
+i <- 1
 
 
-
+train.dat <- dat2[rand != i,]
+test.dat <- dat2[rand == i,]
+trainmodel <- glm( I(cat == 100) ~ land.type + modis + day , data = train.dat , family = binomial) 
+predict <- (predict(object = trainmodel, dat = test.dat,  type = "response" ) > 0.5)
 
 
