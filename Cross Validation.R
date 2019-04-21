@@ -15,8 +15,8 @@ for (i in 1:15 ){
   train.dat <- dat[rand != i,]
   test.dat <- dat[rand == i,]
   
-  #model <- ( dat = train.dat )
-  #predict <-predict( dat = test.dat )
+  #trainmodel <- ( dat = train.dat )
+  #predict <-predict( dat = test.dat, model = trainmodel )
   percerror[i] <- mean( predict != test.dat$cat )
 
 }
@@ -24,5 +24,5 @@ mean(percerror)
 
 
 
-(dat[rand != 1,])
+
 
