@@ -141,8 +141,8 @@ subset$cat[subset$landsat != 100 & subset$landsat!= 0] <- 50
 
 percerror <- rep(NA,15)
 for (i in 1:15 ){
-  train.dat <- subset[rand != i,]
-  test.dat <- subset[rand == i,]
+  train.dat <- dat[rand != i,]
+  test.dat <- dat[rand == i,]
   
   model <- lda(landsat~cos(2*pi*day.of.year/365)+elevation+modis, data=train.dat)
   predict <- predict(object=lda.fit, newdata=test.dat)

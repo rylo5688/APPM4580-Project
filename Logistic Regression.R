@@ -81,8 +81,9 @@ for (i in 1:15 ){
   test.dat <- dat[rand == i,]
   predict <- rep(0, nrow(test.dat))
   
-  trainmodel <- glm( formula(fwd), data = train.dat[,-c(1,2,10)] , family = binomial) 
-  predict <- (predict(object = trainmodel, dat = test.dat,  response = "predict" ) < 0.5)
+  #trainmodel <- glm( I(cat == 0) ~ modis + land.type + day + elevation + slope, data = train.dat , family = binomial) 
+  trainmodel <- glm( I(cat == 0) ~ modis + land.type + day + elevation + sin.slope, data = train.dat , family = binomial) 
+  predict <- (predict(object = trainmodel, dat = test.dat,  type = "response" ) < 0.5)
   percerror[i] <- mean( predict != (test.dat$landsat == 0) )
   print(percerror)
   
@@ -90,3 +91,10 @@ for (i in 1:15 ){
 mean(percerror)
 
 c(TRUE, TRUE, FALSE , FALSE) == c(1,0,1,0)
+
+
+
+
+### RESULTS:
+# slope: 0.5895779
+# sin.slope: 0.589606
