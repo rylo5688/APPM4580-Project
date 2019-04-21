@@ -15,10 +15,10 @@ sv
 sub.i <- logical(4080535) 
 sub.i[sv] <- TRUE  
 
-#subset <- data.frame(dat$landsat[sub.i], dat$day.of.year[sub.i], dat$elevation[sub.i], dat$slope[sub.i], dat$land.type[sub.i], dat$modis[sub.i])
-#colnames(subset) <- c("landsat", "day.of.year", "elevation", "slope", "land.type", "modis")
-subset <- data.frame(dat$landsat[sub.i], dat$day.of.year[sub.i], dat$elevation[sub.i], dat$slope[sub.i], dat$modis[sub.i])
-colnames(subset) <- c("landsat", "day.of.year", "elevation", "slope", "modis")
+subset <- data.frame(dat$landsat[sub.i], dat$day.of.year[sub.i], dat$elevation[sub.i], dat$slope[sub.i], dat$aspect[sub.i], dat$land.type[sub.i], dat$modis[sub.i])
+colnames(subset) <- c("landsat", "day.of.year", "elevation", "slope", "aspect","land.type", "modis")
+#subset <- data.frame(dat$landsat[sub.i], dat$day.of.year[sub.i], dat$elevation[sub.i], dat$slope[sub.i], dat$modis[sub.i])
+#colnames(subset) <- c("landsat", "day.of.year", "elevation", "slope", "modis")
 #y.test <- dat$landsat[!sub]
 
 middle_indices <- which(subset$landsat != 0 & subset$landsat != 100)
@@ -30,8 +30,13 @@ train <- sample(1:n, n/2)
 
 subset$landsat[train]
 
+# Converting 
+for (i in 1:16){
+  subset[paste("land.type",i, sep = "")] <- as.integer(subset$land.type == i)
+}
+
 # Variable Selection
-landsat.sub <- regsubsets(landsat~cos(2*pi*day.of.year/365)+elevation+log(slope+1)+modis, data=subset, nvmax=4)
+landsat.sub <- regsubsets(landsat~cos(2*pi*day.of.year/365)+elevation+log(slope+1)+land.type+modis, data=subset, nvmax=18)
 landsat.sb <- summary(landsat.sub)
 landsat.sb
 
@@ -70,7 +75,17 @@ library(MASS)
 #subset$slope[subset$slope == 0] <- 0.0000001 # Make slope a very small number so logging doesn't make it -Inf
 #table(log(subset$slope) == -Inf)
 #lda.fit <- lda(landsat~modis, data=subset, subset=train)
-lda.fit <- lda(landsat~cos(2*pi*day.of.year/365)+elevation+modis, data=subset, subset=train)
+
+# BIC (NOTE: Had to remove land.type14 because LDA gave error)
+f <- landsat~log(slope + 1)+land.type2+land.type3+land.type4+land.type6+land.type7+land.type8+land.type9+land.type10+land.type11+land.type12+land.type13+land.type16+modis
+
+# CP (NOTE: Had to remove land.type14 because LDA gave error)
+f <- landsat~cos(2*pi*day.of.year/365)+elevation+log(slope+1)+modis+land.type2+land.type3+land.type4+land.type5+land.type6+land.type7+land.type8+land.type9+land.type10+land.type11+land.type12+land.type13+land.type16
+
+# Trying everything without land.type
+f <- landsat~cos(2*pi*day.of.year/365)+elevation+log(slope+1)+modis+aspect
+
+lda.fit <- lda(f, data=subset, subset=train)
 lda.fit
 
 # Plotting the fit
@@ -97,7 +112,6 @@ ggplotLDAPrep <- function(x){
 fitGraph <- ggplotLDAPrep(lda.fit)
 ggplot(fitGraph, aes(LD1,LD2, color=labels))+geom_point()
 
-
 # Prediction
 lda.pred <- predict(object=lda.fit, newdata=subset[-train,])
 
@@ -110,14 +124,38 @@ head(lda.pred$class, 3)
 head(lda.pred$posterior, 3)
 head(lda.pred$x, 3)
 
-library(pROC)
-r.lda <- multiclass.roc(lda.pred$class~lda.pred$posterior[,2])
-summary(r.lda)
+#Kevin Dang Cross Validation Code.
+
+set.seed(12)
+#rand <- sample.int(15,4080535, replace = TRUE)
+rand <- sample.int(15,4996, replace = TRUE)
+
+#dat$cross.val <- rand
+subset$cross.val <- rand
+
+subset$cat <- subset$landsat
+subset$cat[subset$landsat != 100 & subset$landsat!= 0] <- 50
+#dat$cat <- dat$landsat
+#dat$cat[dat$landsat != 100 & dat$landsat!= 0] <- 50
 
 
-# Plotting each roc curve (pairs each off 0 to 50, 0 to 100, 50 to 100)
-# Order: Black, red, green
-r.lda['rocs'][[1]]
-plot.roc(r.lda['rocs'][[1]][[1]])
-sapply(2:length(r.lda['rocs'][[1]]),function(i) lines.roc(r.lda['rocs'][[1]][[i]],col=i))
+percerror <- rep(0,15)
+for (i in 1:15 ){
+  train.dat <- subset[rand != i,]
+  test.dat <- subset[rand == i,]
+  
+  model <- lda(landsat~cos(2*pi*day.of.year/365)+elevation+modis, data=train.dat)
+  predict <- predict(object=lda.fit, newdata=test.dat)
+  percerror[i] <- mean( predict$class != test.dat$cat )
+  
+}
+mean(percerror)
+
+
+# Results
+# BIC: 0.1159335
+# CP: 0.1163914
+# Everything without land.type: 0.118213
+
+
 
