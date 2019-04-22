@@ -35,6 +35,8 @@ for (i in 1:16){
   subset[paste("land.type",i, sep = "")] <- as.integer(subset$land.type == i)
 }
 
+subset <- subset[-6]
+
 # Variable Selection
 landsat.sub <- regsubsets(landsat~cos(2*pi*day.of.year/365)+elevation+log(slope+1)+land.type+modis, data=subset, nvmax=18)
 landsat.sb <- summary(landsat.sub)

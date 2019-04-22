@@ -39,29 +39,32 @@ varImpPlot(rf.fit)
 
 #####Kevin Dang Cross Validation Code.
 
-#set.seed(12)
-set.seed(Sys.time()) # to test with random seeds
-#rand <- sample.int(15,4080535, replace = TRUE)
-rand <- sample.int(15,4996, replace = TRUE)
+set.seed(12)
+#set.seed(Sys.time()) # to test with random seeds
+rand <- sample.int(15,4080535, replace = TRUE)
+#rand <- sample.int(15,4996, replace = TRUE)
 
-#dat$cross.val <- rand
-subset$cross.val <- rand
+dat$cross.val <- rand
+#subset$cross.val <- rand
 
-subset$cat <- subset$landsat
-subset$cat[subset$landsat != 100 & subset$landsat!= 0] <- 50
-#dat$cat <- dat$landsat
-#dat$cat[dat$landsat != 100 & dat$landsat!= 0] <- 50
+#subset$cat <- subset$landsat
+#subset$cat[subset$landsat != 100 & subset$landsat!= 0] <- 50
+dat$cat <- dat$landsat
+dat$cat[dat$landsat != 100 & dat$landsat!= 0] <- 50
 
 
 percerror <- rep(NA,15)
 for (i in 1:15 ){
+  i <- 1
   train.dat <- dat[rand != i,]
   test.dat <- dat[rand == i,]
   
   test.dat$landsat = as.factor(test.dat$landsat)
   train.dat$landsat = as.factor(train.dat$landsat)
   
-  model <- randomForest(landsat~.,data=train.dat,mtry=3,importance=TRUE)
+  model1 <- randomForest(landsat~.,data=train.dat[1:600000,],mtry=3,importance=TRUE)
+  model2 <- randomForest(landsat~.,data=train.dat[600001:dim(train.dat)[1],],mtry=3,importance=TRUE)
+  rf.combined <- combine(rf1,rf2)
   predict <- predict(object=model, newdata=test.dat)
   percerror[i] <- mean( predict != test.dat$cat )
 }
