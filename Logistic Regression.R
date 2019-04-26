@@ -1,7 +1,7 @@
-#Kevin Dang Logistic Regression Model APPM 4580 Final Project
+# load("C:/Users/kevin/Documents/Uni/2019 S1 (Boulder)/APPM 4580/Final Project/SnowCoverData.RData")
+load("C:/Users/keda0185/Downloads/R Assign/SnowCoverData.RData")
 
 
-load("C:/Users/kevin/Documents/Uni/2019 S1 (Boulder)/APPM 4580/Final Project/SnowCoverData.RData")
 
 library(glmulti)
 
@@ -55,7 +55,7 @@ summary(bwd2)
 
 nullmod <-  glm( I(cat == 0 ) ~ 1, data = dat[,-c(1,2,4)] , family = binomial, subset = sv)
 fwd2 <-  step(nullmod, scope=list(lower=formula(nullmod),upper=formula(fullmod)),
-             direction="forward")
+              direction="forward")
 summary(fwd2)
 
 formula(fwd2)
@@ -107,7 +107,7 @@ summary(bwd3)
 
 nullmod <-  glm( I(cat == 100 ) ~ 1, data = dat[cat.z,-c(1,2,10)] , family = binomial, subset = sv)
 fwd3 <-  step(nullmod, scope=list(lower=formula(nullmod),upper=formula(fullmod)),
-             direction="forward")
+              direction="forward")
 
 summary(fwd3)
 
@@ -136,7 +136,7 @@ formula(bwd4)
 summary(bwd4)$aic
 summary(fwd4)$aic
 
-#######Cross-Validation Time#################
+#######Cross-Validation Time No.2 #################
 
 
 set.seed(12)
@@ -156,20 +156,16 @@ for (i in 1:15 ){
   predict <- rep(0, nrow(test.dat))
   
   trainmodel <- glm( I(cat == 100) ~ land.type + modis + day , data = train.dat , family = binomial) 
-  predict <- (predict(object = trainmodel, dat = test.dat,  type = "response" ) > 0.5)
-  percerror[i] <- mean( predict != (test.dat$landsat == 0) )
+  predict <- (predict(object = trainmodel, test.dat,  type = "response" ) > 0.5)
+  percerror[i] <- table(as.numeric( predict != (test.dat$landsat == 100) )  )[["1"]] / nrow(test.dat)
+  print(nrow(test.dat))
+  print(length(predict))
   print(percerror)
   
 }
 mean(percerror)
 
-
-i <- 1
-
-
-train.dat <- dat2[rand != i,]
-test.dat <- dat2[rand == i,]
-trainmodel <- glm( I(cat == 100) ~ land.type + modis + day , data = train.dat , family = binomial) 
-predict <- (predict(object = trainmodel, dat = test.dat,  type = "response" ) > 0.5)
-
+#results
+# > mean(percerror)
+# [1] 0.06691615
 
